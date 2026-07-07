@@ -1,11 +1,10 @@
-import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Bell, Calendar, Menu, Moon, Search, Sun } from 'lucide-react'
+import { Bell, Calendar, Menu, Search } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
+import { ThemeToggle } from '@/components/theme/ThemeToggle'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Switch } from '@/components/ui/switch'
 import { getProfilePathForRole } from '@/lib/navigation'
 
 interface TeacherNavbarProps {
@@ -14,11 +13,6 @@ interface TeacherNavbarProps {
 
 export function TeacherNavbar({ onMenuToggle }: TeacherNavbarProps) {
   const { user } = useAuth()
-  const [darkMode, setDarkMode] = useState(true)
-
-  useEffect(() => {
-    document.documentElement.classList.toggle('light', !darkMode)
-  }, [darkMode])
 
   return (
     <header className="sticky top-0 z-30 border-b border-border/30 bg-bg-primary/80 backdrop-blur-xl">
@@ -28,7 +22,7 @@ export function TeacherNavbar({ onMenuToggle }: TeacherNavbarProps) {
         </Button>
 
         <div className="relative hidden max-w-md flex-1 md:block">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-white/40" />
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-fg-subtle" />
           <Input placeholder="Search courses, students, assignments..." className="pl-10" />
         </div>
 
@@ -41,10 +35,7 @@ export function TeacherNavbar({ onMenuToggle }: TeacherNavbarProps) {
             <Calendar className="h-5 w-5" />
           </Button>
 
-          <div className="hidden items-center gap-2 rounded-full border border-border/40 bg-bg-secondary/40 px-3 py-1.5 sm:flex">
-            {darkMode ? <Moon className="h-3.5 w-3.5 text-white/50" /> : <Sun className="h-3.5 w-3.5 text-white/50" />}
-            <Switch checked={darkMode} onCheckedChange={setDarkMode} />
-          </div>
+          <ThemeToggle />
 
           {user && (
             <Link to={getProfilePathForRole(user.role)}>

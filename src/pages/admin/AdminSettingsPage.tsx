@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ThemeSelector } from '@/components/theme/ThemeSelector'
 
 export default function AdminSettingsPage() {
   return (
@@ -71,35 +72,10 @@ export default function AdminSettingsPage() {
             <CardContent className="space-y-6 p-6">
               <div>
                 <h3 className="font-semibold">Theme Settings</h3>
-                <p className="text-sm text-white/50">Customize the platform appearance.</p>
+                <p className="text-sm text-fg-muted">Applies across the entire admin portal and public pages.</p>
               </div>
               <Separator />
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">Dark Mode Default</p>
-                    <p className="text-xs text-white/45">New users see dark theme by default</p>
-                  </div>
-                  <Switch defaultChecked />
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm font-medium">Brand Accent Color</p>
-                    <p className="text-xs text-white/45">Primary accent for buttons and highlights</p>
-                  </div>
-                  <div className="flex gap-2">
-                    {['#7C3AED', '#2563EB', '#059669', '#DC2626'].map((color) => (
-                      <button
-                        key={color}
-                        type="button"
-                        className="h-8 w-8 rounded-full ring-2 ring-transparent transition-all hover:ring-white/30"
-                        style={{ backgroundColor: color }}
-                      />
-                    ))}
-                  </div>
-                </div>
-              </div>
-              <Button variant="highlight">Apply Theme</Button>
+              <ThemeSelector />
             </CardContent>
           </Card>
         </TabsContent>

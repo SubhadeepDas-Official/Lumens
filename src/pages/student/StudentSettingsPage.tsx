@@ -9,6 +9,7 @@ import { Switch } from '@/components/ui/switch'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ThemeSelector } from '@/components/theme/ThemeSelector'
 import { Bell, Lock, Palette, Shield, User } from 'lucide-react'
 
 export default function StudentSettingsPage() {
@@ -162,30 +163,10 @@ export default function StudentSettingsPage() {
             <Card className="rounded-[18px]">
               <CardHeader>
                 <CardTitle>Theme Preferences</CardTitle>
+                <CardDescription>Applies across the entire app, including dashboard and catalog.</CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    { name: 'Dark', active: true },
-                    { name: 'Light', active: false },
-                    { name: 'System', active: false },
-                  ].map((theme) => (
-                    <button
-                      key={theme.name}
-                      type="button"
-                      className={`rounded-[16px] border p-4 text-center text-sm transition-all ${
-                        theme.active
-                          ? 'border-accent-secondary bg-accent-primary/20 text-white'
-                          : 'border-border/40 text-white/50 hover:border-border'
-                      }`}
-                    >
-                      {theme.name}
-                      {theme.active && (
-                        <span className="mt-1 block text-xs text-highlight">Active</span>
-                      )}
-                    </button>
-                  ))}
-                </div>
+                <ThemeSelector />
               </CardContent>
             </Card>
           </TabsContent>

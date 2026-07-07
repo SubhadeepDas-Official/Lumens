@@ -67,9 +67,9 @@ export default function StudentCoursesPage() {
               <div className="absolute left-3 top-3">
                 <Badge variant="secondary">{course.category}</Badge>
               </div>
-              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4">
+              <div className="absolute bottom-0 left-0 right-0 p-4">
                 <Progress value={course.progress} className="h-1.5" />
-                <p className="mt-1.5 text-xs text-white/70">{course.progress}% complete</p>
+                <p className="mt-1.5 text-xs text-fg-muted">{course.progress}% complete</p>
               </div>
             </div>
             <CardContent className="p-5">

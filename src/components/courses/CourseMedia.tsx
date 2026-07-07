@@ -8,7 +8,8 @@ interface CourseMediaProps {
   variant?: 'hero' | 'card' | 'thumbnail' | 'banner' | 'video'
   className?: string
   children?: ReactNode
-  overlay?: 'heavy' | 'medium' | 'light'
+  overlay?: 'heavy' | 'medium' | 'light' | 'none'
+  tint?: boolean
 }
 
 const variantHeights = {
@@ -30,7 +31,8 @@ export function CourseMedia({
   variant = 'card',
   className,
   children,
-  overlay = 'medium',
+  overlay = variant === 'card' ? 'none' : 'medium',
+  tint = variant !== 'card',
 }: CourseMediaProps) {
   const src = getCourseCoverImage(course)
 
@@ -42,8 +44,12 @@ export function CourseMedia({
         className="absolute inset-0 h-full w-full object-cover"
         loading="lazy"
       />
-      <div className={cn('absolute inset-0 bg-gradient-to-br opacity-50', course.image)} />
-      <div className={cn('absolute inset-0 bg-gradient-to-t', overlayStyles[overlay])} />
+      {tint && (
+        <div className={cn('absolute inset-0 bg-gradient-to-br opacity-50', course.image)} />
+      )}
+      {overlay !== 'none' && (
+        <div className={cn('absolute inset-0 bg-gradient-to-t', overlayStyles[overlay])} />
+      )}
       {children ? <div className="relative h-full">{children}</div> : null}
     </div>
   )

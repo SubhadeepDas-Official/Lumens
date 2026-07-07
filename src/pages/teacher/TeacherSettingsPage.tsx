@@ -6,6 +6,7 @@ import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
 import { Switch } from '@/components/ui/switch'
 import { Separator } from '@/components/ui/separator'
+import { ThemeSelector } from '@/components/theme/ThemeSelector'
 
 export default function TeacherSettingsPage() {
   return (
@@ -41,6 +42,14 @@ export default function TeacherSettingsPage() {
             <div className="space-y-2"><Label>Current Password</Label><Input type="password" /></div>
             <div className="space-y-2"><Label>New Password</Label><Input type="password" /></div>
             <Button variant="outline">Update Password</Button>
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-[18px]">
+          <CardContent className="space-y-4 p-6">
+            <h3 className="font-semibold">Theme</h3>
+            <p className="text-sm text-fg-muted">Choose how Lumen looks across all pages.</p>
+            <ThemeSelector />
           </CardContent>
         </Card>
 

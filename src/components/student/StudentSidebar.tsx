@@ -39,7 +39,7 @@ export function StudentSidebar({ isOpen, onClose }: StudentSidebarProps) {
           isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
         )}
       >
-        <div className="flex h-full flex-col p-4">
+        <div className="flex h-full min-h-0 flex-col p-4">
           <div className="mb-4 flex items-center justify-between">
             <Link to="/student/dashboard" className="flex items-center gap-2" onClick={onClose}>
               <div className="flex h-9 w-9 items-center justify-center rounded-full bg-accent-primary/30">
@@ -54,7 +54,7 @@ export function StudentSidebar({ isOpen, onClose }: StudentSidebarProps) {
             </Button>
           </div>
 
-          <nav className="flex-1 space-y-0.5 overflow-y-auto">
+          <nav className="sidebar-scroll flex-1 min-h-0 space-y-0.5 overflow-y-auto overflow-x-hidden">
             {studentNavItems.map((item) => {
               const isCatalog = item.path === '/catalog'
               const isActive =

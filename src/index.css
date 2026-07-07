@@ -9,6 +9,9 @@
   --color-accent-secondary: #0c969c;
   --color-highlight: #6ba3be;
   --color-border: #274d60;
+  --color-fg: #ffffff;
+  --color-fg-muted: rgba(255, 255, 255, 0.6);
+  --color-fg-subtle: rgba(255, 255, 255, 0.45);
 
   --radius-sm: 12px;
   --radius-md: 18px;
@@ -24,28 +27,64 @@
     scroll-behavior: smooth;
   }
 
+  html.light {
+    --color-bg-primary: #edf4f6;
+    --color-bg-secondary: #d8e8ec;
+    --color-accent-primary: #0a7075;
+    --color-accent-secondary: #0c969c;
+    --color-highlight: #0a7075;
+    --color-border: #9eb8c0;
+    --color-fg: #0a2829;
+    --color-fg-muted: rgba(10, 40, 41, 0.68);
+    --color-fg-subtle: rgba(10, 40, 41, 0.48);
+  }
+
   body {
-    @apply bg-bg-primary text-white font-sans antialiased;
-    background-color: #031716;
+    @apply bg-bg-primary font-sans antialiased;
+    color: var(--color-fg);
+    background-color: var(--color-bg-primary);
     background-image:
       radial-gradient(ellipse 70% 55% at 50% 0%, rgba(10, 112, 117, 0.18), transparent),
       radial-gradient(ellipse 50% 40% at 50% 30%, rgba(12, 150, 156, 0.06), transparent);
     min-height: 100vh;
   }
 
+  html.light body {
+    background-image:
+      radial-gradient(ellipse 70% 55% at 50% 0%, rgba(10, 112, 117, 0.1), transparent),
+      radial-gradient(ellipse 50% 40% at 50% 30%, rgba(12, 150, 156, 0.05), transparent);
+  }
+
   ::selection {
     background: rgba(12, 150, 156, 0.35);
-    color: white;
+    color: var(--color-fg);
   }
 }
 
 @layer utilities {
+  .text-fg {
+    color: var(--color-fg);
+  }
+
+  .text-fg-muted {
+    color: var(--color-fg-muted);
+  }
+
+  .text-fg-subtle {
+    color: var(--color-fg-subtle);
+  }
+
   .glass {
     background: rgba(3, 47, 48, 0.55);
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(39, 77, 96, 0.5);
     border-radius: var(--radius-md);
+  }
+
+  html.light .glass {
+    background: rgba(255, 255, 255, 0.72);
+    border: 1px solid rgba(158, 184, 192, 0.55);
   }
 
   .glass-strong {
@@ -56,8 +95,20 @@
     border-radius: var(--radius-md);
   }
 
+  html.light .glass-strong {
+    background: rgba(255, 255, 255, 0.88);
+    border: 1px solid rgba(158, 184, 192, 0.65);
+  }
+
   .gradient-text {
     background: linear-gradient(135deg, #0c969c 0%, #6ba3be 50%, #0a7075 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  html.light .gradient-text {
+    background: linear-gradient(135deg, #0a7075 0%, #0c969c 50%, #065458 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
@@ -87,14 +138,155 @@
       0 0 40px rgba(10, 112, 117, 0.08);
   }
 
+  html.light .shadow-glow {
+    box-shadow:
+      0 4px 24px rgba(10, 40, 41, 0.08),
+      0 0 40px rgba(10, 112, 117, 0.06);
+  }
+
   .shadow-glow-accent {
     box-shadow:
       0 8px 32px rgba(0, 0, 0, 0.3),
       0 0 60px rgba(12, 150, 156, 0.12);
   }
 
+  html.light .shadow-glow-accent {
+    box-shadow:
+      0 8px 32px rgba(10, 40, 41, 0.1),
+      0 0 60px rgba(12, 150, 156, 0.08);
+  }
+
   .nav-pill-active {
     background: rgba(255, 255, 255, 0.08);
+  }
+
+  html.light .nav-pill-active {
+    background: rgba(10, 112, 117, 0.12);
+  }
+
+  /* Sidebar scroll — prevents default white scrollbar track above profile */
+  .sidebar-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(107, 163, 190, 0.28) transparent;
+  }
+
+  .sidebar-scroll::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+  }
+
+  .sidebar-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .sidebar-scroll::-webkit-scrollbar-thumb {
+    background: rgba(107, 163, 190, 0.28);
+    border-radius: 999px;
+  }
+
+  .sidebar-scroll::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
+  html.light .sidebar-scroll {
+    scrollbar-color: rgba(10, 112, 117, 0.28) transparent;
+  }
+
+  html.light .sidebar-scroll::-webkit-scrollbar-thumb {
+    background: rgba(10, 112, 117, 0.28);
+  }
+
+  /* Light theme text overrides for existing Tailwind utilities */
+  html.light .text-white {
+    color: var(--color-fg);
+  }
+
+  html.light .text-white\/80 {
+    color: rgb(10 40 41 / 0.8);
+  }
+
+  html.light .text-white\/70 {
+    color: rgb(10 40 41 / 0.7);
+  }
+
+  html.light .text-white\/65 {
+    color: rgb(10 40 41 / 0.65);
+  }
+
+  html.light .text-white\/60 {
+    color: rgb(10 40 41 / 0.6);
+  }
+
+  html.light .text-white\/55 {
+    color: rgb(10 40 41 / 0.55);
+  }
+
+  html.light .text-white\/50 {
+    color: rgb(10 40 41 / 0.5);
+  }
+
+  html.light .text-white\/45 {
+    color: rgb(10 40 41 / 0.45);
+  }
+
+  html.light .text-white\/40 {
+    color: rgb(10 40 41 / 0.4);
+  }
+
+  html.light .text-white\/35 {
+    color: rgb(10 40 41 / 0.35);
+  }
+
+  html.light .text-white\/30 {
+    color: rgb(10 40 41 / 0.3);
+  }
+
+  html.light .text-white\/20 {
+    color: rgb(10 40 41 / 0.2);
+  }
+
+  html.light .hover\:text-white:hover {
+    color: var(--color-fg);
+  }
+
+  html.light .hover\:text-white\/70:hover {
+    color: rgb(10 40 41 / 0.7);
+  }
+
+  html.light .placeholder\:text-white\/40::placeholder {
+    color: rgb(10 40 41 / 0.4);
+  }
+
+  html.light .bg-bg-secondary\/20 {
+    background-color: rgb(216 232 236 / 0.35);
+  }
+
+  html.light .bg-bg-secondary\/30 {
+    background-color: rgb(216 232 236 / 0.45);
+  }
+
+  html.light .bg-bg-secondary\/40 {
+    background-color: rgb(216 232 236 / 0.55);
+  }
+
+  html.light .bg-bg-secondary\/50 {
+    background-color: rgb(216 232 236 / 0.65);
+  }
+
+  html.light .bg-bg-secondary\/60 {
+    background-color: rgb(216 232 236 / 0.75);
+  }
+
+  html.light .bg-bg-primary\/80 {
+    background-color: rgb(237 244 246 / 0.88);
+  }
+
+  html.light .hover\:bg-bg-secondary\/60:hover {
+    background-color: rgb(216 232 236 / 0.75);
+  }
+
+  html.light .hover\:bg-bg-secondary\/40:hover {
+    background-color: rgb(216 232 236 / 0.55);
   }
 
   @keyframes partner-marquee {

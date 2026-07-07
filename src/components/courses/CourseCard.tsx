@@ -22,7 +22,7 @@ export function CourseCard({ course, variant = 'default' }: CourseCardProps) {
   return (
     <motion.div whileHover={{ y: -4 }} transition={{ duration: 0.2 }}>
       <Card className="group overflow-hidden transition-all duration-300 hover:shadow-glow-accent">
-        <CourseMedia course={course} variant="card" overlay="light">
+        <CourseMedia course={course} variant="card">
           <div className="relative h-full">
             <div className="absolute left-4 top-4 flex gap-2">
               <Badge variant="secondary">{course.category}</Badge>
@@ -30,7 +30,7 @@ export function CourseCard({ course, variant = 'default' }: CourseCardProps) {
             </div>
             {course.progress !== undefined && (
               <div className="absolute bottom-0 left-0 right-0 p-4">
-                <div className="flex items-center justify-between text-xs text-white/70">
+                <div className="flex items-center justify-between text-xs text-fg-muted">
                   <span>{course.progress}% complete</span>
                 </div>
                 <Progress value={course.progress} className="mt-1.5 h-1.5" />

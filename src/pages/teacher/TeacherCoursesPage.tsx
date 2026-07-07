@@ -70,7 +70,6 @@ export default function TeacherCoursesPage() {
           <Card key={course.id} className="overflow-hidden rounded-[18px]">
             <div className="relative h-36">
               <img src={course.thumbnail} alt={course.title} className="h-full w-full object-cover" />
-              <div className={cn('absolute inset-0 bg-gradient-to-t from-bg-primary/90 to-transparent')} />
               <Badge className="absolute right-3 top-3 capitalize">{course.status}</Badge>
             </div>
             <CardContent className="p-4">

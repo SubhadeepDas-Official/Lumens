@@ -13,7 +13,7 @@ import { getAuthRedirectUrl } from '@/lib/auth-redirect'
 import { getAuthErrorMessage } from '@/lib/auth-errors'
 import { getDashboardPath, type UserRole } from '@/lib/roles'
 import { isValidPhone, normalizePhoneToE164 } from '@/lib/phone'
-import { assignUserRole, getUserProfile, type UserProfile } from '@/services/userService'
+import { assignUserRole, getUserProfile, updateUserProfile, type UserProfile } from '@/services/userService'
 
 export type { UserProfile as User }
 
@@ -35,6 +35,7 @@ interface AuthContextType {
   sendVerificationEmail: (email?: string) => Promise<AuthResult>
   handleAuthCallback: () => Promise<AuthResult>
   reloadAuthUser: () => Promise<void>
+  updateProfile: (updates: { bio?: string }) => Promise<AuthResult>
   logout: () => Promise<void>
   getUserDashboardPath: () => string
 }
@@ -386,6 +387,22 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  const updateProfile = useCallback(
+    async (updates: { bio?: string }): Promise<AuthResult> => {
+      if (!authUser) {
+        return { success: false, error: 'You must be signed in.' }
+      }
+      try {
+        const profile = await updateUserProfile(authUser.id, updates)
+        setUser(profile)
+        return { success: true, role: profile.role }
+      } catch (error) {
+        return { success: false, error: getAuthErrorMessage(error) }
+      }
+    },
+    [authUser]
+  )
+
   const logout = useCallback(async () => {
     await supabase.auth.signOut()
     setUser(null)
@@ -416,6 +433,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         sendVerificationEmail,
         handleAuthCallback,
         reloadAuthUser,
+        updateProfile,
         logout,
         getUserDashboardPath,
       }}

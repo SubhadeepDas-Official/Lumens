@@ -97,3 +97,21 @@ export async function assignUserRole(authUser: User, role: UserRole): Promise<Us
     phone: authUser.phone ?? undefined,
   })
 }
+
+export async function updateUserProfile(
+  uid: string,
+  updates: { bio?: string }
+): Promise<UserProfile> {
+  const { data, error } = await supabase
+    .from('profiles')
+    .update({
+      ...updates,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', uid)
+    .select('*')
+    .single()
+
+  if (error) throw error
+  return mapRowToProfile(data)
+}
