@@ -6,6 +6,7 @@ import { PageTransition } from '@/components/animations/PageTransition'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { getDashboardPath } from '@/lib/roles'
+import { getAuthRedirectUrl } from '@/lib/auth-redirect'
 import { supabase } from '@/lib/supabase'
 
 export default function VerifyEmailPage() {
@@ -20,6 +21,7 @@ export default function VerifyEmailPage() {
   const displayEmail =
     authUser?.email ?? (location.state as { email?: string })?.email ?? ''
   const isLoggedIn = !!authUser
+  const redirectUrl = getAuthRedirectUrl('/auth/callback')
 
   const handleResend = async () => {
     if (!displayEmail) {
@@ -32,7 +34,7 @@ export default function VerifyEmailPage() {
     const result = await sendVerificationEmail(displayEmail)
     setLoading(false)
     if (result.success) {
-      setMessage('Verification email sent. Check your inbox.')
+      setMessage('Verification email sent. Check your inbox and spam folder.')
     } else {
       setError(result.error)
     }
@@ -40,7 +42,10 @@ export default function VerifyEmailPage() {
 
   const handleCheckVerified = async () => {
     if (!isLoggedIn) {
-      navigate('/login', { replace: true, state: { message: 'Sign in after verifying your email.' } })
+      navigate('/login', {
+        replace: true,
+        state: { message: 'Sign in after verifying your email.' },
+      })
       return
     }
     setError('')
@@ -51,10 +56,10 @@ export default function VerifyEmailPage() {
     } = await supabase.auth.getUser()
     setCheckLoading(false)
     if (freshUser?.email_confirmed_at) {
-      navigate(dashboard, { replace: true })
-    } else {
-      setError('Email not verified yet. Please check your inbox and click the link.')
+      navigate(user ? dashboard : '/select-role', { replace: true })
+      return
     }
+    setError('Email not verified yet. Click the link in your email, then try again.')
   }
 
   return (
@@ -82,6 +87,29 @@ export default function VerifyEmailPage() {
               After clicking the link in your email, sign in to access your dashboard.
             </p>
           )}
+
+          <div className="rounded-[14px] border border-border/30 bg-bg-secondary/30 px-4 py-3 text-xs text-white/50">
+            <p className="font-medium text-white/70">Not receiving emails?</p>
+            <ul className="mt-2 list-inside list-disc space-y-1">
+              <li>Check your spam or promotions folder</li>
+              <li>Avoid temporary email addresses — they often block auth emails</li>
+              <li>
+                In Supabase: Authentication → URL Configuration, add{' '}
+                <span className="text-white/70">{redirectUrl}</span>
+              </li>
+              <li>
+                For production, configure SMTP under Authentication → Email in Supabase
+              </li>
+              <li>
+                Or{' '}
+                <Link to="/signup" className="text-highlight hover:underline">
+                  sign up with phone OTP
+                </Link>{' '}
+                instead
+              </li>
+            </ul>
+          </div>
+
           {message && (
             <div className="rounded-[14px] border border-accent-secondary/30 bg-accent-primary/10 px-4 py-3 text-sm text-highlight">
               {message}
@@ -112,7 +140,12 @@ export default function VerifyEmailPage() {
             <Button
               variant="highlight"
               className="w-full"
-              onClick={() => navigate('/login', { replace: true })}
+              onClick={() =>
+                navigate('/login', {
+                  replace: true,
+                  state: { message: 'Sign in after verifying your email.' },
+                })
+              }
             >
               Go to sign in
             </Button>

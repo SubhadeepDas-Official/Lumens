@@ -17,6 +17,8 @@ import LoginPage from '@/pages/LoginPage'
 import SignupPage from '@/pages/SignupPage'
 import ForgotPasswordPage from '@/pages/ForgotPasswordPage'
 import VerifyEmailPage from '@/pages/VerifyEmailPage'
+import VerifyPhonePage from '@/pages/VerifyPhonePage'
+import AuthCallbackPage from '@/pages/AuthCallbackPage'
 import SelectRolePage from '@/pages/SelectRolePage'
 import CourseDetailsPage from '@/pages/CourseDetailsPage'
 import PurchaseCoursesPage from '@/pages/PurchaseCoursesPage'
@@ -100,6 +102,8 @@ function AnimatedRoutes() {
             }
           />
           <Route path="/verify-email" element={<VerifyEmailPage />} />
+          <Route path="/verify-phone" element={<VerifyPhonePage />} />
+          <Route path="/auth/callback" element={<AuthCallbackPage />} />
           <Route
             path="/select-role"
             element={

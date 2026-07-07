@@ -22,6 +22,10 @@ export function getAuthErrorMessage(error: unknown): string {
       return 'Too many attempts. Please try again later.'
     case 'email_not_confirmed':
       return 'Please verify your email before signing in.'
+    case 'sms_send_failed':
+      return 'Could not send SMS. Enable Phone auth and SMS in your Supabase project.'
+    case 'phone_provider_disabled':
+      return 'Phone sign-in is not enabled. Enable Phone auth in Supabase Authentication settings.'
     case 'validation_failed':
       return 'Please enter a valid email address.'
     case '42501':
@@ -33,6 +37,9 @@ export function getAuthErrorMessage(error: unknown): string {
       }
       if (message.includes('Email not confirmed')) {
         return 'Please verify your email before signing in.'
+      }
+      if (message.includes('SMS') || message.includes('phone')) {
+        return 'Could not send SMS. Enable Phone auth in Supabase and configure an SMS provider.'
       }
       if (message.includes('row-level security') || message.includes('permission denied')) {
         return 'Database access denied. Check Supabase RLS policies for the profiles table.'

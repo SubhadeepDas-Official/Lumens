@@ -6,11 +6,13 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import type { User } from '@supabase/supabase-js'
+import type { EmailOtpType, User } from '@supabase/supabase-js'
 import { isSupabaseConfigured, supabase } from '@/lib/supabase'
-import { isValidEmail, isValidPassword, type AuthResult } from '@/lib/auth'
+import { isValidEmail, isValidOtp, isValidPassword, type AuthResult } from '@/lib/auth'
+import { getAuthRedirectUrl } from '@/lib/auth-redirect'
 import { getAuthErrorMessage } from '@/lib/auth-errors'
 import { getDashboardPath, type UserRole } from '@/lib/roles'
+import { isValidPhone, normalizePhoneToE164 } from '@/lib/phone'
 import { assignUserRole, getUserProfile, type UserProfile } from '@/services/userService'
 
 export type { UserProfile as User }
@@ -25,10 +27,13 @@ interface AuthContextType {
   needsEmailVerification: boolean
   login: (email: string, password: string) => Promise<AuthResult>
   signup: (name: string, email: string, password: string) => Promise<AuthResult>
+  sendPhoneOtp: (phone: string, name?: string) => Promise<AuthResult>
+  verifyPhoneOtp: (phone: string, token: string) => Promise<AuthResult>
   loginWithGoogle: () => Promise<AuthResult>
   completeRoleSelection: (role: UserRole) => Promise<AuthResult>
   resetPassword: (email: string) => Promise<AuthResult>
   sendVerificationEmail: (email?: string) => Promise<AuthResult>
+  handleAuthCallback: () => Promise<AuthResult>
   reloadAuthUser: () => Promise<void>
   logout: () => Promise<void>
   getUserDashboardPath: () => string
@@ -44,9 +49,20 @@ function usesEmailProvider(authUser: User | null): boolean {
   )
 }
 
+function usesPhoneProvider(authUser: User | null): boolean {
+  if (!authUser) return false
+  return (
+    authUser.app_metadata?.provider === 'phone' ||
+    authUser.identities?.some((identity) => identity.provider === 'phone') === true
+  )
+}
+
 function checkNeedsEmailVerification(authUser: User | null): boolean {
   if (!authUser) return false
-  return usesEmailProvider(authUser) && !authUser.email_confirmed_at
+  if (usesPhoneProvider(authUser) && authUser.phone_confirmed_at) return false
+  if (!usesEmailProvider(authUser) && authUser.phone_confirmed_at) return false
+  if (!authUser.email) return false
+  return !authUser.email_confirmed_at
 }
 
 async function loadProfileForUser(authUser: User): Promise<UserProfile | null> {
@@ -149,12 +165,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return { success: false, error: 'Password must be at least 8 characters.' }
       }
       try {
+        const redirectTo = getAuthRedirectUrl('/auth/callback')
         const { data, error } = await supabase.auth.signUp({
           email: trimmedEmail,
           password,
           options: {
             data: { name: trimmedName },
-            emailRedirectTo: `${window.location.origin}/verify-email`,
+            emailRedirectTo: redirectTo,
           },
         })
         if (error) throw error
@@ -162,19 +179,82 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           return { success: false, error: 'Sign up failed. Please try again.' }
         }
 
+        // Supabase may return a user with no session when email confirmation is required.
         if (data.session) {
           setAuthUser(data.user)
           setUser(null)
+          const needsVerification = checkNeedsEmailVerification(data.user)
+          if (needsVerification) {
+            return { success: true, needsEmailVerification: true }
+          }
           return { success: true, needsRoleSelection: true }
         }
 
-        return { success: true }
+        return { success: true, needsEmailVerification: true }
       } catch (error) {
         return { success: false, error: getAuthErrorMessage(error) }
       }
     },
     []
   )
+
+  const sendPhoneOtp = useCallback(async (phone: string, name?: string): Promise<AuthResult> => {
+    if (!isSupabaseConfigured) {
+      return { success: false, error: 'Supabase is not configured.' }
+    }
+    if (!isValidPhone(phone)) {
+      return { success: false, error: 'Please enter a valid 10-digit mobile number.' }
+    }
+    const normalizedPhone = normalizePhoneToE164(phone)
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        phone: normalizedPhone,
+        options: name?.trim()
+          ? { data: { name: name.trim() } }
+          : undefined,
+      })
+      if (error) throw error
+      return { success: true }
+    } catch (error) {
+      return { success: false, error: getAuthErrorMessage(error) }
+    }
+  }, [])
+
+  const verifyPhoneOtp = useCallback(async (phone: string, token: string): Promise<AuthResult> => {
+    if (!isSupabaseConfigured) {
+      return { success: false, error: 'Supabase is not configured.' }
+    }
+    if (!isValidPhone(phone)) {
+      return { success: false, error: 'Invalid phone number.' }
+    }
+    if (!isValidOtp(token)) {
+      return { success: false, error: 'Please enter the 6-digit OTP.' }
+    }
+    const normalizedPhone = normalizePhoneToE164(phone)
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        phone: normalizedPhone,
+        token: token.trim(),
+        type: 'sms',
+      })
+      if (error) throw error
+      if (!data.user) {
+        return { success: false, error: 'Verification failed. Please try again.' }
+      }
+
+      const profile = await loadProfileForUser(data.user)
+      setAuthUser(data.user)
+      setUser(profile)
+
+      return {
+        success: true,
+        role: profile?.role,
+        needsRoleSelection: !profile,
+      }
+    } catch (error) {
+      return { success: false, error: getAuthErrorMessage(error) }
+    }
+  }, [])
 
   const loginWithGoogle = useCallback(async (): Promise<AuthResult> => {
     if (!isSupabaseConfigured) {
@@ -184,7 +264,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`,
+          redirectTo: getAuthRedirectUrl('/auth/callback'),
         },
       })
       if (error) throw error
@@ -220,7 +300,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
     try {
       const { error } = await supabase.auth.resetPasswordForEmail(trimmedEmail, {
-        redirectTo: `${window.location.origin}/login`,
+        redirectTo: getAuthRedirectUrl('/auth/callback'),
       })
       if (error) throw error
       return { success: true }
@@ -238,6 +318,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       const { error } = await supabase.auth.resend({
         type: 'signup',
         email: targetEmail,
+        options: {
+          emailRedirectTo: getAuthRedirectUrl('/auth/callback'),
+        },
       })
       if (error) throw error
       return { success: true }
@@ -245,6 +328,50 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return { success: false, error: getAuthErrorMessage(error) }
     }
   }, [authUser])
+
+  const handleAuthCallback = useCallback(async (): Promise<AuthResult> => {
+    try {
+      const params = new URLSearchParams(window.location.search)
+      const tokenHash = params.get('token_hash')
+      const type = params.get('type') as EmailOtpType | null
+
+      if (tokenHash && type) {
+        const { error } = await supabase.auth.verifyOtp({
+          token_hash: tokenHash,
+          type,
+        })
+        if (error) throw error
+      }
+
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession()
+      if (sessionError) throw sessionError
+
+      const nextAuthUser = session?.user ?? null
+      setAuthUser(nextAuthUser)
+
+      if (!nextAuthUser) {
+        return { success: false, error: 'Could not complete sign in. Try signing in again.' }
+      }
+
+      const profile = await loadProfileForUser(nextAuthUser)
+      setUser(profile)
+
+      const needsVerification = checkNeedsEmailVerification(nextAuthUser)
+      const needsRoleSelection = !profile && !needsVerification
+
+      return {
+        success: true,
+        role: profile?.role,
+        needsEmailVerification: needsVerification,
+        needsRoleSelection,
+      }
+    } catch (error) {
+      return { success: false, error: getAuthErrorMessage(error) }
+    }
+  }, [])
 
   const reloadAuthUser = useCallback(async () => {
     const {
@@ -281,10 +408,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         needsEmailVerification,
         login,
         signup,
+        sendPhoneOtp,
+        verifyPhoneOtp,
         loginWithGoogle,
         completeRoleSelection,
         resetPassword,
         sendVerificationEmail,
+        handleAuthCallback,
         reloadAuthUser,
         logout,
         getUserDashboardPath,
