@@ -1,4 +1,6 @@
+import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Loader2 } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { PageTransition, FadeIn } from '@/components/animations/PageTransition'
 import { StudentPageHeader } from '@/components/student/StudentUI'
@@ -9,7 +11,6 @@ import { Separator } from '@/components/ui/separator'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
-import { Switch } from '@/components/ui/switch'
 import {
   Award,
   BookOpen,
@@ -24,10 +25,31 @@ import {
 import { getEnrolledCoursesWithMeta, studentStats } from '@/data/studentPortal'
 
 export default function StudentProfilePage() {
-  const { user } = useAuth()
+  const { user, updateProfile } = useAuth()
   const enrolled = getEnrolledCoursesWithMeta()
+  const [bio, setBio] = useState(user?.bio ?? '')
+  const [saving, setSaving] = useState(false)
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    setBio(user?.bio ?? '')
+  }, [user?.bio])
 
   if (!user) return null
+
+  const handleSaveBio = async () => {
+    setError('')
+    setMessage('')
+    setSaving(true)
+    const result = await updateProfile({ bio: bio.trim() })
+    setSaving(false)
+    if (result.success) {
+      setMessage('Bio saved successfully.')
+    } else {
+      setError(result.error)
+    }
+  }
 
   return (
     <PageTransition>
@@ -62,7 +84,7 @@ export default function StudentProfilePage() {
               <Link to="/student/settings">
                 <Button variant="outline" className="mt-6 w-full rounded-full">
                   <Edit3 className="h-4 w-4" />
-                  Edit Profile
+                  Account Settings
                 </Button>
               </Link>
             </CardContent>
@@ -76,21 +98,42 @@ export default function StudentProfilePage() {
               <CardContent className="grid gap-4 sm:grid-cols-2">
                 <div className="space-y-2">
                   <Label>Full Name</Label>
-                  <Input defaultValue={user.name} />
+                  <Input value={user.name} readOnly disabled />
                 </div>
                 <div className="space-y-2">
                   <Label>Email</Label>
-                  <Input defaultValue={user.email} type="email" />
+                  <Input value={user.email} type="email" readOnly disabled />
                 </div>
                 <div className="space-y-2 sm:col-span-2">
-                  <Label>Bio</Label>
+                  <Label htmlFor="bio">Bio</Label>
                   <textarea
+                    id="bio"
                     className="min-h-24 w-full rounded-[16px] border border-border/50 bg-bg-secondary/50 px-4 py-3 text-sm"
-                    defaultValue={user.bio}
+                    value={bio}
+                    onChange={(e) => setBio(e.target.value)}
+                    placeholder="Tell others about yourself..."
                   />
                 </div>
-                <Button variant="highlight" className="sm:col-span-2 w-fit">
-                  Save Changes
+                {message && (
+                  <p className="sm:col-span-2 text-sm text-highlight">{message}</p>
+                )}
+                {error && (
+                  <p className="sm:col-span-2 text-sm text-red-400">{error}</p>
+                )}
+                <Button
+                  variant="highlight"
+                  className="sm:col-span-2 w-fit"
+                  onClick={handleSaveBio}
+                  disabled={saving}
+                >
+                  {saving ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    'Save Changes'
+                  )}
                 </Button>
               </CardContent>
             </Card>
@@ -113,46 +156,6 @@ export default function StudentProfilePage() {
                 </Card>
               ))}
             </div>
-
-            <Card className="rounded-[18px]">
-              <CardHeader>
-                <CardTitle>Change Password</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="space-y-2">
-                  <Label>Current Password</Label>
-                  <Input type="password" placeholder="••••••••" />
-                </div>
-                <div className="space-y-2">
-                  <Label>New Password</Label>
-                  <Input type="password" placeholder="••••••••" />
-                </div>
-                <Button variant="secondary" className="rounded-full">
-                  Update Password
-                </Button>
-              </CardContent>
-            </Card>
-
-            <Card className="rounded-[18px]">
-              <CardHeader>
-                <CardTitle>Notification Preferences</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {[
-                  { label: 'Course updates', desc: 'New lessons and announcements' },
-                  { label: 'Live class reminders', desc: 'Upcoming session alerts' },
-                  { label: 'Assignment deadlines', desc: 'Due date reminders' },
-                ].map((item) => (
-                  <div key={item.label} className="flex items-center justify-between">
-                    <div>
-                      <p className="text-sm font-medium">{item.label}</p>
-                      <p className="text-xs text-white/45">{item.desc}</p>
-                    </div>
-                    <Switch defaultChecked />
-                  </div>
-                ))}
-              </CardContent>
-            </Card>
 
             <Card className="rounded-[18px]">
               <CardHeader>

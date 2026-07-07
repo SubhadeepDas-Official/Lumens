@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import { useAuth } from '@/context/AuthContext'
 import { PageTransition, FadeIn } from '@/components/animations/PageTransition'
 import { StudentPageHeader } from '@/components/student/StudentUI'
@@ -9,19 +8,10 @@ import { Switch } from '@/components/ui/switch'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
-import { ThemeSelector } from '@/components/theme/ThemeSelector'
-import { Bell, Lock, Palette, Shield, User } from 'lucide-react'
+import { Bell, Lock, Shield, User } from 'lucide-react'
 
 export default function StudentSettingsPage() {
   const { user } = useAuth()
-  const [name, setName] = useState(user?.name || '')
-  const [email, setEmail] = useState(user?.email || '')
-  const [notifications, setNotifications] = useState({
-    email: true,
-    push: true,
-    marketing: false,
-    courseUpdates: true,
-  })
 
   return (
     <PageTransition>
@@ -46,30 +36,25 @@ export default function StudentSettingsPage() {
               <Lock className="h-4 w-4" />
               Security
             </TabsTrigger>
-            <TabsTrigger value="appearance" className="gap-2">
-              <Palette className="h-4 w-4" />
-              Theme
-            </TabsTrigger>
           </TabsList>
 
           <TabsContent value="account">
             <Card className="rounded-[18px]">
               <CardHeader>
                 <CardTitle>Account Settings</CardTitle>
-                <CardDescription>Update your account information</CardDescription>
+                <CardDescription>Your account details</CardDescription>
               </CardHeader>
               <CardContent className="space-y-5">
                 <div className="grid gap-5 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="name">Full Name</Label>
-                    <Input id="name" value={name} onChange={(e) => setName(e.target.value)} />
+                    <Input id="name" value={user?.name ?? ''} readOnly disabled />
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="email">Email</Label>
-                    <Input id="email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
+                    <Input id="email" type="email" value={user?.email ?? ''} readOnly disabled />
                   </div>
                 </div>
-                <Button variant="highlight">Save Changes</Button>
               </CardContent>
             </Card>
           </TabsContent>
@@ -81,22 +66,17 @@ export default function StudentSettingsPage() {
               </CardHeader>
               <CardContent className="space-y-6">
                 {[
-                  { key: 'email' as const, label: 'Email Notifications', desc: 'Receive updates via email' },
-                  { key: 'push' as const, label: 'Push Notifications', desc: 'Browser push notifications' },
-                  { key: 'courseUpdates' as const, label: 'Course Updates', desc: 'New lessons and announcements' },
-                  { key: 'marketing' as const, label: 'Marketing Emails', desc: 'Promotions and new courses' },
+                  { label: 'Email Notifications', desc: 'Receive updates via email' },
+                  { label: 'Push Notifications', desc: 'Browser push notifications' },
+                  { label: 'Course Updates', desc: 'New lessons and announcements' },
+                  { label: 'Marketing Emails', desc: 'Promotions and new courses' },
                 ].map((item) => (
-                  <div key={item.key} className="flex items-center justify-between">
+                  <div key={item.label} className="flex items-center justify-between">
                     <div>
                       <p className="font-medium">{item.label}</p>
                       <p className="text-sm text-white/50">{item.desc}</p>
                     </div>
-                    <Switch
-                      checked={notifications[item.key]}
-                      onCheckedChange={(checked) =>
-                        setNotifications((prev) => ({ ...prev, [item.key]: checked }))
-                      }
-                    />
+                    <Switch defaultChecked={item.label !== 'Marketing Emails'} />
                   </div>
                 ))}
               </CardContent>
@@ -155,18 +135,6 @@ export default function StudentSettingsPage() {
                     Enable
                   </Button>
                 </div>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="appearance">
-            <Card className="rounded-[18px]">
-              <CardHeader>
-                <CardTitle>Theme Preferences</CardTitle>
-                <CardDescription>Applies across the entire app, including dashboard and catalog.</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <ThemeSelector />
               </CardContent>
             </Card>
           </TabsContent>

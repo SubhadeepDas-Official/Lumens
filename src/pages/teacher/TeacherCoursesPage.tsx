@@ -10,7 +10,6 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Progress } from '@/components/ui/progress'
 import { teacherCourses, type CourseStatus } from '@/data/teacherPortal'
 import { formatIndianCount } from '@/lib/format'
-import { cn } from '@/lib/utils'
 
 const filters: (CourseStatus | 'all')[] = ['all', 'published', 'draft', 'archived']
 const categories = ['All', 'Development', 'Design', 'Data Science', 'Marketing', 'Cloud']
